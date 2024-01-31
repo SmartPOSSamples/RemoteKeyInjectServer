@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xml>
+<Configuration status="OFF" monitorInterval="60">
+	<Loggers>
+		<Root level="error">
+			<!--
+			<AppenderRef ref="Console" />
+			 -->
+			<AppenderRef ref="DebugFile" />
+			<AppenderRef ref="ErrorFile" />
+		</Root>
+		<Logger name="com.cloudpos" level="debug" additivity="false">
+			<!--
+			-->
+			<AppenderRef ref="Console" />
+			<AppenderRef ref="DebugFile" />
+			<AppenderRef ref="ErrorFile" />
+		</Logger>
+	</Loggers>
+
+	<Appenders>
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout pattern="%d{HH:mm:ss,SSS} %-5p %m (%F:%L) %n" />
+		</Console>
+
+		<RollingFile name="DebugFile" filename="logs/ssltransfer.log" filePattern="logs/ssltransfer.log.%i">
+			<PatternLayout pattern="%d{yyyy/MM/dd HH:mm:ss,SSS} %-5p %m (%F:%L) %n" />
+			<ThresholdFilter level="debug" onMatch="NEUTRAL" onMismatch="DENY"/>
+			<Policies>
+				<SizeBasedTriggeringPolicy size="100 MB" />
+			</Policies>
+			<DefaultRolloverStrategy max="10" />
+		</RollingFile>
+
+		<RollingFile name="ErrorFile" filename="logs/ssltransfererror.log" filePattern="logs/ssltransfererror.log.%i">
+			<PatternLayout pattern="%d{yyyy/MM/dd HH:mm:ss,SSS} %-5p %m (%F:%L) %n" />
+			<ThresholdFilter level="error" onMatch="NEUTRAL" onMismatch="DENY"/>
+			<Policies>
+				<SizeBasedTriggeringPolicy size="100 MB" />
+			</Policies>
+			<DefaultRolloverStrategy max="10" />
+		</RollingFile>
+
+	</Appenders>
+</Configuration>
