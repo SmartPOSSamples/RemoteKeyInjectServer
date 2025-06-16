@@ -6,6 +6,8 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.cloudpos.rki.util.CommonUtils;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -21,16 +23,12 @@ import io.netty.util.concurrent.GenericFutureListener;
  */
 public class CommandHandler extends ChannelInboundHandlerAdapter {
 	private static final Logger logger = LoggerFactory.getLogger(CommandHandler.class);
-	private MessageManager messageManager = MessageManager.getSingleton();
-
 	private ByteArrayOutputStream dataBuf;
-
-	public CommandHandler() {
-		logger.debug("Instance address: " + this);
-	}
+	private String rid;
 
 	@Override
 	public void channelActive(final ChannelHandlerContext ctx) {
+		rid = CommonUtils.randomAlphaNumber(8);
 		ctx.pipeline().get(SslHandler.class).handshakeFuture().addListener(new GenericFutureListener<Future<Channel>>() {
 			public void operationComplete(Future<Channel> future) throws Exception {
 				dataBuf = new ByteArrayOutputStream();
@@ -41,7 +39,7 @@ public class CommandHandler extends ChannelInboundHandlerAdapter {
 	@Override
 	public void channelInactive(final ChannelHandlerContext ctx) {
 		ctx.close();
-		logger.debug("Close connection...");
+		logger.debug("{} - Close connection...", rid);
 	}
 
 	@Override
@@ -52,7 +50,7 @@ public class CommandHandler extends ChannelInboundHandlerAdapter {
 			in.readBytes(bytes);
 			dataBuf.write(bytes);
 		} catch (IOException e) {
-			logger.error("", e);
+			logger.error("{} - ", rid, e);
 		} finally {
 			ReferenceCountUtil.release(msg);
 		}
@@ -63,15 +61,14 @@ public class CommandHandler extends ChannelInboundHandlerAdapter {
 		if (dataBuf == null || dataBuf.size() < 1) {
 			return;
 		}
-		MessagePack messagePack = new MessagePack(dataBuf.toByteArray(), ctx);
-		messageManager.addSocketMessage(messagePack);
+		MessageDispatch.dispatch(dataBuf.toByteArray(), ctx, rid);
 
 		dataBuf = new ByteArrayOutputStream();
 	}
 
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-		logger.error("", cause);
+		logger.error("{} - ", rid, cause);
 		ctx.close();
 	}
 }

@@ -2,8 +2,8 @@ package com.cloudpos.rki.pinpad.keyinfo;
 
 public class TransportKeyInfo extends MasterKeyInfo {
 
-	public TransportKeyInfo(String sn) {
-		super(sn);
+	public TransportKeyInfo(String sn, String rid) {
+		super(sn, rid);
 		this.keyType = KEY_TYPE_TRANSPORT;
 	}
 

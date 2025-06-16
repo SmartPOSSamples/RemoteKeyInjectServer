@@ -1,5 +1,6 @@
 package com.cloudpos.rki.pinpad;
 
+import com.cloudpos.rki.pinpad.keyinfo.DukptAesKeyInfo;
 import com.cloudpos.rki.pinpad.keyinfo.DukptKeyInfo;
 import com.cloudpos.rki.pinpad.keyinfo.MasterKeyInfo;
 import com.cloudpos.rki.pinpad.keyinfo.TransportKeyInfo;
@@ -30,6 +31,9 @@ public class CKeyInfo {
 	private byte[] bSig;
 
 	private byte[] plainKeyInfo;
+	
+	private boolean aes;
+	private String rid;
 
 	public CKeyInfo(AuthInfo authInfo, String sn) {
 		this.authInfo = authInfo;
@@ -41,6 +45,7 @@ public class CKeyInfo {
 	}
 
 	public byte[] build() {
+		// use terminal cert to encrypt plain key
 		bCipherKeyInfo = CertUtils.encrypt(authInfo.getCert(), plainKeyInfo);
 
 		byte[] sData = new byte[bRandom.length + bCipherKeyInfo.length];
@@ -70,20 +75,40 @@ public class CKeyInfo {
 	}
 
 	public CKeyInfo setMasterKey(int keyIndex, byte[] key) {
-		MasterKeyInfo keyInfo = new MasterKeyInfo(sn);
+		MasterKeyInfo keyInfo = new MasterKeyInfo(sn, rid);
 		plainKeyInfo = keyInfo.buildMasterKey(keyIndex, key);
 		return this;
 	}
 
 	public CKeyInfo setTransportKey(int keyIndex, byte[] key) {
-		TransportKeyInfo keyInfo = new TransportKeyInfo(sn);
+		TransportKeyInfo keyInfo = new TransportKeyInfo(sn, rid);
 		plainKeyInfo = keyInfo.buildTransportKey(keyIndex, key);
 		return this;
 	}
 
 	public CKeyInfo setDukptKey(int keyIndex, int reserved, byte[] ksn, int counter, byte[] key) {
-		DukptKeyInfo keyInfo = new DukptKeyInfo(sn);
+		DukptKeyInfo keyInfo = new DukptKeyInfo(sn, rid);
 		plainKeyInfo = keyInfo.build(keyIndex, reserved, ksn, counter, key);
 		return this;
+	}
+	
+	public CKeyInfo setDukptAesKey(int keyIndex, int keyUsage, byte[] ksn, int counter, byte[] key) {
+		DukptAesKeyInfo keyInfo = new DukptAesKeyInfo(sn, rid);
+		plainKeyInfo = keyInfo.build(keyIndex, keyUsage, ksn, counter, key);
+		return this;
+	}
+	
+	public CKeyInfo setRid(String rid) {
+		this.rid = rid;
+		return this;
+	}
+	
+	public CKeyInfo setAes(boolean aes) {
+		this.aes = aes;
+		return this;
+	}
+	
+	public boolean isAes() {
+		return aes;
 	}
 }

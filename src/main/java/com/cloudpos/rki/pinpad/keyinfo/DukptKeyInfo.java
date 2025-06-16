@@ -14,12 +14,14 @@ public class DukptKeyInfo extends PKeyInfo {
     private byte[] ksn;
     private byte[] counter;
     private byte[] initialKey;
+    
+    private int initialKeyLen = LEN_INITIAL_KEY;
 
-    public DukptKeyInfo(String sn) {
-    	super(sn);
+    public DukptKeyInfo(String sn, String rid) {
+    	super(sn, rid);
 		this.keyType = KEY_TYPE_DUKPT;
 	}
-
+    
     @Override
     public void parse0(byte[] data) {
         super.parse0(data);
@@ -37,11 +39,11 @@ public class DukptKeyInfo extends PKeyInfo {
         this.offset += LEN_INITIAL_KEY;
     }
 
-    public byte[] build(int keyIndex, int reserved, byte[] ksn, int counter, byte[] key) {
-    	return build(keyIndex, ByteConvert.int2byte2(reserved, false), ksn, ByteConvert.int2byte4(counter), key);
+    public byte[] build(int keyIndex, int reserved, byte[] ksn, int counter, byte[] initialKey) {
+    	return build(keyIndex, ByteConvert.int2byte2(reserved, false), ksn, ByteConvert.int2byte4(counter), initialKey);
     }
 
-    public byte[] build(int keyIndex, byte[] reserved, byte[] ksn, byte[] counter, byte[] key) {
+    public byte[] build(int keyIndex, byte[] reserved, byte[] ksn, byte[] counter, byte[] initialKey) {
     	if (keyIndex < 0 || keyIndex > 49) {
     		throw new IllegalArgumentException("Key index must be between 0 and 49. But current key index is [" + keyIndex + "]");
     	}
@@ -54,10 +56,11 @@ public class DukptKeyInfo extends PKeyInfo {
     	if (counter.length != 4) {
     		throw new IllegalArgumentException("The counter length must be 4. But current counter length is [" + counter.length + "]");
     	}
-    	if (key.length != 16) {
-    		throw new IllegalArgumentException("The key length must be 16. But current key length is [" + key.length + "]");
+    	// key 3DES: 16. key AES: 16 24 32
+    	if (!CommonUtils.in(initialKey.length, 16, 24, 32)) {
+    		throw new IllegalArgumentException("The key length should be 16/24/32. But current key length is [" + initialKey.length + "]");
     	}
-    	byte[] result = new byte[LEN_KEY_TYPE + LEN_KEY_INDEX + LEN_RESERVED + LEN_KSN + LEN_COUNTER + LEN_INITIAL_KEY];
+    	byte[] result = new byte[LEN_KEY_TYPE + LEN_KEY_INDEX + LEN_RESERVED + LEN_KSN + LEN_COUNTER + initialKeyLen];
     	int index = 0;
     	CommonUtils.append(keyType, result, index);
     	index += LEN_KEY_TYPE;
@@ -74,8 +77,8 @@ public class DukptKeyInfo extends PKeyInfo {
     	CommonUtils.append(counter, result, index);
     	index += LEN_COUNTER;
 
-    	CommonUtils.append(key, result, index);
-    	index += LEN_INITIAL_KEY;
+    	CommonUtils.append(initialKey, result, index);
+    	index += initialKeyLen;
 
     	return result;
     }

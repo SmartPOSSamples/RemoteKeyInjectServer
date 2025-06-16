@@ -15,27 +15,31 @@ public abstract class PKeyInfo {
     protected static final byte KEY_TYPE_DUKPT = 1;
     protected static final byte KEY_TYPE_MASTER = 2;
     protected static final byte KEY_TYPE_TRANSPORT = 3;
+    
+    protected static final byte KEY_TYPE_DUKPT_AES = 6;
 
     protected int offset = 0;
     protected byte keyType;
     protected byte keyIndex;
+    protected String rid;
     
     protected String sn;
-    public PKeyInfo(String sn) {
+    public PKeyInfo(String sn, String rid) {
 		this.sn = sn;
+		this.rid = rid;
 	}
 
-    public static PKeyInfo parse(byte[] data) {
+    public static PKeyInfo parse(byte[] data, String rid) {
         byte keyType = data[0];
         PKeyInfo keyInfo = null;
         if (KEY_TYPE_DUKPT == keyType) {
-            keyInfo = new DukptKeyInfo(null);
+            keyInfo = new DukptKeyInfo(null, rid);
             
         } else if (KEY_TYPE_MASTER == keyType) {
-        	keyInfo = new MasterKeyInfo(null);
+        	keyInfo = new MasterKeyInfo(null, rid);
         	
         } else if (KEY_TYPE_TRANSPORT == keyType) {
-        	keyInfo = new TransportKeyInfo(null);
+        	keyInfo = new TransportKeyInfo(null, rid);
         }
         keyInfo.parse0(data);
         return keyInfo;
@@ -56,4 +60,8 @@ public abstract class PKeyInfo {
     public byte getKeyIndex() {
         return keyIndex;
     }
+    
+    public void setRid(String rid) {
+		this.rid = rid;
+	}
 }

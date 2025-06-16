@@ -66,6 +66,10 @@ public class ConfigUtil {
 		return properties.getProperty("pinpad.key.passwd").toCharArray();
 	}
 	
+	public static String getPinpadRootCert() {
+		return properties.getProperty("pinpad.root.cert");
+	}
+	
 	public static boolean contain(String model) {
 		return properties.containsKey("key.len." + model.toLowerCase());
 	}

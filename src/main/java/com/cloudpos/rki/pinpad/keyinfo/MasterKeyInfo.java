@@ -17,15 +17,15 @@ public class MasterKeyInfo extends PKeyInfo {
 	// Q2 Q1v2 K2 --> 32 
 	protected int lengthKey = LEN_KEY;
 
-	public MasterKeyInfo(String sn) {
-		super(sn);
+	public MasterKeyInfo(String sn, String rid) {
+		super(sn, rid);
 		this.keyType = KEY_TYPE_MASTER;
 		
 		if (sn != null) {
 			String model = Models.getModel(sn);
 			if (model != null && ConfigUtil.contain(model.trim())) {
 				lengthKey = ConfigUtil.getKeyLen(model.trim());
-				logger.debug("sn: {}, model: {}, lenght key: {}", sn, model, lengthKey);
+				logger.debug("{} - sn: {}, model: {}, lenght key: {}", rid, sn, model, lengthKey);
 			}
 		}
 	}
@@ -70,8 +70,8 @@ public class MasterKeyInfo extends PKeyInfo {
     	if (keyIndex < 0 || keyIndex > 49) {
     		throw new IllegalArgumentException("Key index must be between 0 and 49. But current key index is [" + keyIndex + "]");
     	}
-    	if (key.length != 16 && key.length != 24 && key.length != 32) {
-    		throw new IllegalArgumentException("The key length must be 16, 24 or 32. But the using key length is [" + key.length + "]");
+    	if (!CommonUtils.in(key.length, 16, 24, 32)) {
+    		throw new IllegalArgumentException("The key length should be 16/24/32. But the using key length is [" + key.length + "]");
     	}
     	byte[] result = new byte[LEN_KEY_TYPE + LEN_KEY_INDEX + LEN_KEY_LEN + LEN_RESERVED + lengthKey];
     	int index = 0;

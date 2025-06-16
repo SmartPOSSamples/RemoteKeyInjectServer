@@ -1,7 +1,10 @@
 package com.cloudpos.rki.util;
 
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.Reader;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
@@ -12,7 +15,11 @@ import javax.crypto.Cipher;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESKeySpec;
 
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.openssl.jcajce.JcaMiscPEMGenerator;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemReader;
 import org.bouncycastle.util.io.pem.PemWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +39,21 @@ public class CertUtils {
 		}
 		return null;
 	}
-
+	
+	public static X509Certificate readPemCert(Reader oreader) throws Exception {
+		PemReader reader = new PemReader(oreader);
+		PemObject pemObject = reader.readPemObject();
+		X509CertificateHolder holder = new X509CertificateHolder(pemObject.getContent());
+		X509Certificate cert = new JcaX509CertificateConverter().setProvider("BC")
+				.getCertificate(holder);
+		reader.close();
+		return cert;
+	}
+	
+	public static X509Certificate readPemCert(InputStream inputStream) throws Exception {
+		return readPemCert(new InputStreamReader(inputStream));
+	}
+	
 	public static byte[] encrypt(X509Certificate cert, byte[] data) {
 		try {
 			Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");

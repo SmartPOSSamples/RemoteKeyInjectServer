@@ -73,23 +73,42 @@ public class KeyList {
 			if ("1".equals(keyType)) {
 				String[] vs = keyStr.split(",", 5);
 				int keyIndex = Integer.parseInt(vs[0].trim());
-//				int reserved = Integer.parseInt(vs[1].trim());
-				int reserved = 0xff;
 				int counter = Integer.parseInt(vs[2].trim());
 				byte[] ksn = CommonUtils.toBytes(vs[3].trim());
-				byte[] key = CommonUtils.toBytes(vs[4].trim());
-
-				this.dukptKeys.add(new DukptKey(keyIndex, reserved, counter, ksn, key));
+				
+				String keyBlock = vs[4].trim();
+				TKey tkey = convert(keyBlock);
+				int reserved = Integer.parseInt(vs[1].trim());
+				if (!tkey.isAes()) {
+					reserved = 0xff;
+				}
+				this.dukptKeys.add(new DukptKey(keyIndex, reserved, counter, ksn, tkey.getKey(), tkey.isAes()));
 
 			} else if ("2".equals(keyType)) {
 				String[] vs = keyStr.split(",", 2);
-				this.masterKeys.add(new MasterKey(Integer.parseInt(vs[0].trim()), CommonUtils.toBytes(vs[1].trim())));
+				
+				String keyBlock = vs[1].trim();
+				TKey tkey = convert(keyBlock);
+				this.masterKeys.add(new MasterKey(Integer.parseInt(vs[0].trim()), tkey.getKey(), tkey.isAes()));
 
 			} else if ("3".equals(keyType)) {
 				String[] vs = keyStr.split(",", 2);
-				this.transportKeys.add(new TransportKey(Integer.parseInt(vs[0].trim()), CommonUtils.toBytes(vs[1].trim())));
+				TKey tkey = convert(vs[1].trim());
+				this.transportKeys.add(new TransportKey(Integer.parseInt(vs[0].trim()), tkey.getKey(), tkey.isAes()));
 			}
 			return this;
+		}
+		private TKey convert(String keyBlock) {
+			byte[] key = null;
+			boolean aes = false;
+			int colonIndex = keyBlock.indexOf(":");
+			if (colonIndex != -1) {
+				aes = "aes".equalsIgnoreCase(keyBlock.substring(0, colonIndex));
+				key = CommonUtils.toBytes(keyBlock.substring(colonIndex + 1));
+			} else {
+				key = CommonUtils.toBytes(keyBlock);
+			}
+			return new TKey(key, aes);
 		}
 		public List<DukptKey> getDukptKeys() {
 			return dukptKeys;
@@ -118,16 +137,21 @@ public class KeyList {
 		private int counter;
 		private byte[] ksn;
 		private byte[] key;
-		public DukptKey(int keyIndex, int reserved, int counter, byte[] ksn, byte[] key) {
+		private boolean aes;
+		public DukptKey(int keyIndex, int reserved, int counter, byte[] ksn, byte[] key, boolean aes) {
 			this.keyIndex = keyIndex;
 			this.reserved = reserved;
 			this.counter = counter;
 			this.ksn = ksn;
 			this.key = key;
+			this.aes = aes;
 		}
 		public int getKeyIndex() {
 			return keyIndex;
 		}
+		/**
+		 * key usage.
+		 */
 		public int getReserved() {
 			return reserved;
 		}
@@ -140,14 +164,19 @@ public class KeyList {
 		public byte[] getKey() {
 			return key;
 		}
+		public boolean isAes() {
+			return aes;
+		}
 	}
 
 	public static class MasterKey {
 		private int keyIndex;
 		private byte[] key;
-		public MasterKey(int keyIndex, byte[] key) {
+		private boolean aes;
+		public MasterKey(int keyIndex, byte[] key, boolean aes) {
 			this.keyIndex = keyIndex;
 			this.key = key;
+			this.aes = aes;
 		}
 		public int getKeyIndex() {
 			return keyIndex;
@@ -155,11 +184,29 @@ public class KeyList {
 		public byte[] getKey() {
 			return key;
 		}
+		public boolean isAes() {
+			return aes;
+		}
 	}
 
 	public static class TransportKey extends MasterKey {
-		public TransportKey(int keyIndex, byte[] key) {
-			super(keyIndex, key);
+		public TransportKey(int keyIndex, byte[] key, boolean aes) {
+			super(keyIndex, key, aes);
+		}
+	}
+	
+	public static class TKey {
+		private boolean aes;
+		private byte[] key;
+		public TKey(byte[] key, boolean aes) {
+			this.key = key;
+			this.aes = aes;
+		}
+		public byte[] getKey() {
+			return key;
+		}
+		public boolean isAes() {
+			return aes;
 		}
 	}
 }

@@ -1,10 +1,18 @@
 package com.cloudpos.rki.util;
 
+import java.io.InputStream;
 import java.util.Random;
 
 import org.bouncycastle.util.encoders.Hex;
 
 public class CommonUtils {
+	private static final char[] DEFAULT_CANDIDATES = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123467890+-*/".toCharArray();
+	private static final char[] DEFAULT_ALPHANUMBER = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123467890".toCharArray();
+	private static final char[] DEFAULT_NUMBER = "0123467890".toCharArray();
+	
+	public static InputStream loadClassPathResource(String name) {
+		return CommonUtils.class.getResourceAsStream(name);
+	}
 
 	public static byte[] intTo2Bytes(int i) {
 		byte[] bs = new byte[2];
@@ -22,13 +30,24 @@ public class CommonUtils {
 		}
 		return ((src[offset + 0] & 0xff) << 8 | (src[offset + 1] & 0xff));
 	}
-
+	
 	public static String randomString(int length) {
-		char[] cs = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123467890+-*/".toCharArray();
+		return randomString(DEFAULT_CANDIDATES, length);
+	}
+	
+	public static String randomAlphaNumber(int length) {
+		return randomString(DEFAULT_ALPHANUMBER, length);
+	}
+	
+	public static String randomNumber(int length) {
+		return randomString(DEFAULT_NUMBER, length);
+	}
+
+	public static String randomString(char[] arr, int length) {
 		Random random = new Random();
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(length);
 		for (int i = 0; i < length; i++) {
-			sb.append(cs[random.nextInt(cs.length)]);
+			sb.append(arr[random.nextInt(arr.length)]);
 		}
 		return sb.toString();
 	}
@@ -58,6 +77,10 @@ public class CommonUtils {
     public static void append(byte[] src, byte[] dest, int offset) {
         System.arraycopy(src, 0, dest, offset, src.length);
     }
+    
+    public static void append(byte[] src, byte[] dest, int offset, int length) {
+        System.arraycopy(src, 0, dest, offset, length);
+    }
 
     public static void append(byte src, byte[] dest, int offset) {
     	dest[offset] = src;
@@ -75,5 +98,17 @@ public class CommonUtils {
     		pos += src.length;
     	}
     	return result;
+    }
+    
+    public static boolean in(int v, int...candidates) {
+    	if (candidates == null) {
+    		return false;
+    	}
+    	for (int i : candidates) {
+    		if (i == v) {
+    			return true;
+    		}
+    	}
+    	return false;
     }
 }

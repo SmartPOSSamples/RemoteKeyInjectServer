@@ -1,0 +1,5 @@
+2018-04-13		zhou.li			Improvement			Change SSL Protocol version > TLSv1.2
+2019-04-13		zhou.li			Improvement			MyHostSelf.p12-->MyHostSelf.jks
+2022-01-14		zhou.li			Fix Bug 			log4j2.15 -> 2.17.1
+2022-07-11		zhou.li			Improvement 		Add terminal certificate verification
+2025-06-13		zhou.li			Improvement 		Add DUKPT key in AES format injecting
