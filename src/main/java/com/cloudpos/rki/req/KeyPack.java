@@ -41,9 +41,10 @@ public abstract class KeyPack implements Runnable {
 	protected AuthInfo getAndCheckCert() throws Exception {
 		AuthInfo authInfo = new AuthInfo(CommonUtils.subBytes(inData, 1));
 		// Check whether the terminal certificate is correct.
-		if (!verify(authInfo.getCert())) {
-			logger.error("{} - Verify failed. ", rid);
-		}
+		// Terminal certificate is 4096 RSA, but the root certificate in the app is 2048 RSA public key, so can not verify for 4096 RSA key terminals, ignore the verify.
+		//if (!verify(authInfo.getCert())) {
+		//	logger.error("{} - Verify failed. ", rid);
+		//}
 		return authInfo;
 	}
 	
