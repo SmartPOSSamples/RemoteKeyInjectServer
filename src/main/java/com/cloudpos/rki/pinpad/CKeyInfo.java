@@ -17,7 +17,7 @@ public class CKeyInfo {
 	private static final int LEN_PUB_KEY_LEN = 4;
 	private static final int LEN_PUB_KEY = 4096;
 	private static final int LEN_RANDOM = 32;
-	private static final int LEN_CIPHER_KEY_INFO = 256;
+	private  int LEN_CIPHER_KEY_INFO = 256;
 	private static final int LEN_SIG = 256;
 
 	private AuthInfo authInfo;
@@ -47,7 +47,9 @@ public class CKeyInfo {
 	public byte[] build() {
 		// use terminal cert to encrypt plain key
 		bCipherKeyInfo = CertUtils.encrypt(authInfo.getCert(), plainKeyInfo);
-
+		System.out.println("bCipherKeyInfo.length:"+bCipherKeyInfo.length);
+		//256 or 512
+		LEN_CIPHER_KEY_INFO = bCipherKeyInfo.length;
 		byte[] sData = new byte[bRandom.length + bCipherKeyInfo.length];
 		CommonUtils.append(bRandom, sData, 0);
 		CommonUtils.append(bCipherKeyInfo, sData, bRandom.length);
@@ -55,20 +57,23 @@ public class CKeyInfo {
 
 
 		byte[] result = new byte[LEN_PUB_KEY_LEN + LEN_PUB_KEY + LEN_RANDOM + LEN_CIPHER_KEY_INFO + LEN_SIG];
+		System.out.println("result.length="+result.length);
 		int len = 0;
 		CommonUtils.append(bPubKeyLen, result, len);
 		len += LEN_PUB_KEY_LEN;
-
+		System.out.println("bPubKeyLen.length="+bPubKeyLen.length);
 		CommonUtils.append(bPubKey, result, len);
 		len += LEN_PUB_KEY;
-
+		System.out.println("bPubKey.length="+bPubKey.length);
 		CommonUtils.append(bRandom, result, len);
 		len += LEN_RANDOM;
-
+		System.out.println("bRandom.length="+bRandom.length);
 		CommonUtils.append(bCipherKeyInfo, result, len);
+		System.out.println("bCipherKeyInfo.length="+bCipherKeyInfo.length);
 		len += LEN_CIPHER_KEY_INFO;
 
 		CommonUtils.append(bSig, result, len);
+		System.out.println("bSig.length="+bSig.length);
 		len += LEN_SIG;
 
 		return result;
